@@ -1,0 +1,756 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Further Mechanics & Thermal Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Familjen+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: lab-bench pages — sticky spec-referenced tab strip; each topic = oscilloscope-style sim + breakdown side by side, flip-card questions beneath. */
+:root{
+  --paper:#f4f7f6; --surface:#ffffff; --ink:#16212c; --muted:#56636f; --line:#d5dde2; --grid:#e6edf0;
+  --accent:#1f5fbf; --accent-soft:#e3ecfa; --wave2:#cf5c17; --node:#c2263d; --good:#1b7a4c; --good-soft:#e2f3ea; --warn-soft:#fbeee4;
+  --f-display:"Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f151b; --surface:#151d25; --ink:#e5ecf1; --muted:#93a1ad; --line:#2a3540; --grid:#1c2630;
+  --accent:#72a6ff; --accent-soft:#1a2a44; --wave2:#ff9a5c; --node:#ff6b80; --good:#4cc38a; --good-soft:#15302a; --warn-soft:#33241a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#0f151b; --surface:#151d25; --ink:#e5ecf1; --muted:#93a1ad; --line:#2a3540; --grid:#1c2630;
+  --accent:#72a6ff; --accent-soft:#1a2a44; --wave2:#ff9a5c; --node:#ff6b80; --good:#4cc38a; --good-soft:#15302a; --warn-soft:#33241a; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{padding-block:28px 14px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,4.4vw,42px);line-height:1.08;margin:6px 0 8px;text-wrap:balance;letter-spacing:-.01em}
+h1 .sig{display:inline-block;vertical-align:middle;margin-left:6px}
+.lede{color:var(--muted);max-width:68ch;margin:0}
+h2{font-family:var(--f-display);font-weight:700;font-size:26px;line-height:1.15;margin:0;text-wrap:balance}
+h3{font-family:var(--f-display);font-weight:600;font-size:18px;margin:0 0 8px}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);border-bottom:1px solid var(--line)}
+.tabrow{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;padding-block:8px 0}
+.tab{flex:0 0 auto;border:1px solid transparent;border-bottom:none;background:none;color:var(--muted);font:inherit;cursor:pointer;padding:8px 14px 10px;border-radius:8px 8px 0 0;text-align:left;display:flex;flex-direction:column;gap:1px;position:relative;top:1px}
+.tab .ref{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em}
+.tab .nm{font-family:var(--f-display);font-weight:600;font-size:15px;color:var(--ink)}
+.tab:hover .nm{color:var(--accent)}
+.tab[aria-selected="true"]{background:var(--surface);border-color:var(--line);color:var(--accent)}
+.tab[aria-selected="true"] .nm{color:var(--accent)}
+.tab.practice .nm::before{content:"✎ ";}
+.tab:focus-visible,button:focus-visible,input:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+main{padding-block:22px 60px}
+.panel-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:8px 20px;margin-bottom:18px}
+.panel-head p{margin:4px 0 0;color:var(--muted);max-width:70ch}
+.lab{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:900px){.lab{grid-template-columns:minmax(0,1fr)}}
+
+.scope{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.scope-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.scope canvas{display:block;width:100%}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 18px;padding:14px 14px 4px}
+.ctl label{display:flex;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted)}
+.ctl label output{font-family:var(--f-mono);color:var(--ink);font-size:13px}
+.ctl input[type=range]{width:100%;accent-color:var(--accent);margin:4px 0 0}
+.toggles{display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px 4px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:var(--surface);color:var(--muted);font:inherit;font-size:14px;padding:6px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.check{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);padding:6px 4px}
+.check input{accent-color:var(--accent);width:16px;height:16px}
+.readout{display:flex;flex-wrap:wrap;gap:1px;background:var(--line);border-top:1px solid var(--line);margin-top:12px}
+.readout div{background:var(--surface);padding:10px 12px;flex:1 1 130px;min-width:0}
+.readout dt{font-size:12px;color:var(--muted);font-family:var(--f-mono);letter-spacing:.03em}
+.readout dd{margin:2px 0 0;font-family:var(--f-mono);font-size:15px;font-variant-numeric:tabular-nums}
+.status{padding:10px 14px;font-size:14px;border-top:1px solid var(--line)}
+.status b{font-family:var(--f-display)}
+.pause{border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit;font-size:12px;font-family:var(--f-mono);padding:3px 10px;border-radius:6px;cursor:pointer}
+
+.notes{display:flex;flex-direction:column;gap:16px;min-width:0}
+.eqbox{background:var(--accent-soft);border-radius:10px;padding:12px 14px}
+.eqbox h3{font-size:14px;font-family:var(--f-mono);font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.eq{font-family:var(--f-mono);font-size:15px;display:flex;flex-wrap:wrap;gap:6px 22px}
+.steps{counter-reset:s;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px minmax(0,1fr);gap:8px}
+.steps li::before{content:counter(s);font-family:var(--f-mono);font-size:12px;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);display:grid;place-items:center;margin-top:1px}
+.traps{background:var(--warn-soft);border-radius:10px;padding:12px 14px}
+.traps h3{color:var(--wave2);font-size:14px;font-family:var(--f-mono);font-weight:500;letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px}
+.traps ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
+.try{font-size:14px;color:var(--muted);border-left:3px solid var(--line);padding-left:10px}
+.try b{color:var(--ink)}
+
+.qhead{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px;margin:36px 0 12px;border-top:1px solid var(--line);padding-top:22px}
+.qhead p{margin:0;color:var(--muted);font-size:14px}
+.qgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+@media (max-width:420px){.qgrid{grid-template-columns:minmax(0,1fr)}}
+.qcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.qcard.flipped{border-color:var(--good);background:linear-gradient(var(--good-soft),var(--good-soft)) top/100% 4px no-repeat, var(--surface)}
+.qmeta{display:flex;justify-content:space-between;gap:8px;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.qmeta .mk{color:var(--accent)}
+.qcard.flipped .qmeta .side{color:var(--good)}
+.qbody{flex:1;min-width:0}
+.qbody p{margin:0 0 8px}
+.qbody p:last-child{margin-bottom:0}
+.qbody ol,.qbody ul{margin:4px 0 8px;padding-left:20px}
+.qbody .opts{list-style:upper-alpha;padding-left:24px}
+.ans .work{font-family:var(--f-mono);font-size:13.5px;background:var(--paper);border-radius:8px;padding:8px 10px;margin:6px 0;overflow-x:auto;white-space:pre-wrap}
+.ans .final{font-weight:700;color:var(--good)}
+.flip{align-self:flex-start;border:1px solid var(--accent);background:none;color:var(--accent);font:inherit;font-size:14px;font-weight:700;padding:6px 14px;border-radius:8px;cursor:pointer}
+.flip:hover{background:var(--accent);color:var(--surface)}
+.qcard.flipped .flip{border-color:var(--good);color:var(--good)}
+.qcard.flipped .flip:hover{background:var(--good);color:var(--surface)}
+
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:14px;padding:5px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tally{margin-left:auto;font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.ghost{border:1px solid var(--line);background:none;color:var(--muted);font:inherit;font-size:13px;padding:5px 12px;border-radius:8px;cursor:pointer}
+.tagline{font-family:var(--f-mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+sub,sup{font-size:.72em;line-height:0}
+footer{color:var(--muted);font-size:13px;padding-block:0 40px}
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">AQA A-level Physics 7408 · Section 3.6 Further mechanics and thermal physics</div>
+    <h1>Further Mechanics &amp; Thermal Lab</h1>
+    <p class="lede">The trickiest parts of circular motion, simple harmonic motion and thermal physics, each with a live simulation, a step-by-step breakdown and questions. Answers stay hidden until you turn a card over. The last tab is a bank of exam-style practice.</p>
+  </header>
+</div>
+
+<nav class="tabs" aria-label="Topics">
+  <div class="wrap"><div class="tabrow" role="tablist" id="tablist">
+    <button class="tab" role="tab" data-tab="circular"><span class="ref">3.6.1.1</span><span class="nm">Circular motion</span></button>
+    <button class="tab" role="tab" data-tab="shm"><span class="ref">3.6.1.2–3</span><span class="nm">Simple harmonic motion</span></button>
+    <button class="tab" role="tab" data-tab="resonance"><span class="ref">3.6.1.4</span><span class="nm">Damping &amp; resonance</span></button>
+    <button class="tab" role="tab" data-tab="gases"><span class="ref">3.6.2.2–3</span><span class="nm">Ideal gases</span></button>
+    <button class="tab" role="tab" data-tab="heat"><span class="ref">3.6.2.1</span><span class="nm">Specific &amp; latent heat</span></button>
+    <button class="tab practice" role="tab" data-tab="practice"><span class="ref">Mixed</span><span class="nm">Exam practice</span></button>
+  </div></div>
+</nav>
+
+<main class="wrap">
+
+<!-- ============ CIRCULAR ============ -->
+<section class="panel" role="tabpanel" data-panel="circular">
+  <div class="panel-head"><div><div class="eyebrow">Uniform circular motion</div><h2>Circular motion</h2>
+  <p>Watch the velocity and acceleration vectors as the mass goes round. Switch to a vertical circle to see why the string tension changes between the top and the bottom.</p></div></div>
+  <div class="lab">
+    <div class="scope">
+      <div class="scope-bar"><span><span style="color:var(--accent)">■</span> velocity · <span style="color:var(--node)">■</span> acceleration / resultant force</span><button class="pause" data-pause="circular">Pause</button></div>
+      <canvas id="c-circular" aria-label="Mass moving in a circle with vectors"></canvas>
+      <div class="toggles"><div class="seg" id="cm-mode"><button aria-pressed="true" data-v="H">Horizontal circle</button><button aria-pressed="false" data-v="V">Vertical circle</button></div></div>
+      <div class="controls">
+        <div class="ctl"><label for="cm-r">Radius r <output id="cm-r-o"></output></label><input type="range" id="cm-r" min="0.20" max="2.00" step="0.05" value="0.80"></div>
+        <div class="ctl"><label for="cm-v" id="cm-v-l">Speed v <output id="cm-v-o"></output></label><input type="range" id="cm-v" min="0.5" max="10" step="0.1" value="4.0"></div>
+        <div class="ctl"><label for="cm-m">Mass m <output id="cm-m-o"></output></label><input type="range" id="cm-m" min="0.10" max="2.00" step="0.05" value="0.50"></div>
+      </div>
+      <dl class="readout" id="cm-read"></dl>
+      <div class="status" id="cm-status"></div>
+    </div>
+    <div class="notes">
+      <div class="eqbox"><h3>Key equations</h3><div class="eq"><span>ω = v/r = 2πf</span><span>a = v²/r = ω²r</span><span>F = mv²/r = mω²r</span></div></div>
+      <div><h3>Breaking it down</h3><ol class="steps">
+        <li><div>Speed is constant but the <b>direction</b> of velocity keeps changing, so velocity changes. The object is <b>accelerating</b>.</div></li>
+        <li><div>The acceleration, and so the resultant force, points towards the <b>centre</b>. This is the centripetal force.</div></li>
+        <li><div>Centripetal force is not a new force. It is the <b>resultant</b> of real forces: tension, friction, gravity, the normal reaction.</div></li>
+        <li><div>The force is perpendicular to the velocity, so it does <b>no work</b> and the speed doesn't change.</div></li>
+        <li><div>In a <b>vertical circle</b>, weight helps at the top and opposes at the bottom: T<sub>top</sub> = mv²/r − mg, T<sub>bottom</sub> = mv²/r + mg.</div></li>
+        <li><div>The string stays taut at the top only if v² ≥ gr. Below that, gravity alone is more than enough to provide the centripetal force.</div></li>
+      </ol></div>
+      <div class="traps"><h3>Common traps</h3><ul>
+        <li>Drawing "centripetal force" as an extra force on a free-body diagram.</li>
+        <li>Saying there is an outward "centrifugal" force. In the ground frame there isn't one.</li>
+        <li>Revolutions per minute to rad s⁻¹: multiply by 2π, then divide by 60.</li>
+        <li>In a vertical circle, using the same speed at the top and the bottom. Energy is conserved, so the speed is lower at the top.</li>
+      </ul></div>
+      <p class="try"><b>Try this:</b> in the vertical circle, reduce the speed at the bottom until the status says the string goes slack. Check that v<sub>top</sub>² is just under gr.</p>
+    </div>
+  </div>
+  <div class="qhead"><h3>Questions: circular motion</h3><p>Turn a card over to check your answer.</p></div>
+  <div class="qgrid" data-qset="circular"></div>
+</section>
+
+<!-- ============ SHM ============ -->
+<section class="panel" role="tabpanel" data-panel="shm" hidden>
+  <div class="panel-head"><div><div class="eyebrow">Oscillations</div><h2>Simple harmonic motion</h2>
+  <p>A mass on a spring on a frictionless surface. The graphs show displacement, velocity and acceleration against time; the bars show how energy moves between kinetic and elastic potential.</p></div></div>
+  <div class="lab">
+    <div class="scope">
+      <div class="scope-bar"><span><span style="color:var(--accent)">x</span> · <span style="color:var(--wave2)">v</span> · <span style="color:var(--node)">a</span> against time</span><button class="pause" data-pause="shm">Pause</button></div>
+      <canvas id="c-shm" aria-label="Mass-spring oscillator with x, v and a graphs"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="sh-m">Mass m <output id="sh-m-o"></output></label><input type="range" id="sh-m" min="0.10" max="2.00" step="0.05" value="0.50"></div>
+        <div class="ctl"><label for="sh-k">Spring constant k <output id="sh-k-o"></output></label><input type="range" id="sh-k" min="5" max="100" step="1" value="20"></div>
+        <div class="ctl"><label for="sh-A">Amplitude A <output id="sh-A-o"></output></label><input type="range" id="sh-A" min="0.02" max="0.10" step="0.01" value="0.06"></div>
+      </div>
+      <dl class="readout" id="sh-read"></dl>
+    </div>
+    <div class="notes">
+      <div class="eqbox"><h3>Key equations</h3><div class="eq"><span>a = −ω²x</span><span>x = A cos ωt</span><span>v = ±ω√(A² − x²)</span><span>v<sub>max</sub> = ωA</span><span>a<sub>max</sub> = ω²A</span><span>T = 2π√(m/k)</span><span>T = 2π√(l/g)</span></div></div>
+      <div><h3>Breaking it down</h3><ol class="steps">
+        <li><div><b>Definition of SHM:</b> acceleration is proportional to displacement from equilibrium and always directed towards equilibrium (a = −ω²x).</div></li>
+        <li><div>At the extremes: x = ±A, v = 0, |a| is maximum. At equilibrium: x = 0, |v| is maximum, a = 0.</div></li>
+        <li><div><b>Phase:</b> velocity is a quarter cycle (π/2) ahead of displacement. Acceleration is in antiphase (π) with displacement.</div></li>
+        <li><div>The period does not depend on amplitude. This is what makes SHM <b>isochronous</b>.</div></li>
+        <li><div>Energy swaps between kinetic and potential twice per cycle. Total energy = ½kA² stays constant without damping.</div></li>
+        <li><div>The pendulum formula only works for small angles (under about 10°), where sin θ ≈ θ.</div></li>
+      </ol></div>
+      <div class="traps"><h3>Common traps</h3><ul>
+        <li>Using x = A sin ωt when timing starts at maximum displacement. Use cos when x = A at t = 0.</li>
+        <li>Calculator in degrees for x = A cos ωt. ωt is in radians.</li>
+        <li>A mass-spring period does not depend on g. A pendulum period does not depend on mass.</li>
+        <li>KE is maximum twice per cycle, so energy graphs have half the period of the x graph.</li>
+      </ul></div>
+      <p class="try"><b>Try this:</b> change the amplitude and check the period readout. Then quadruple the mass. What happens to T?</p>
+    </div>
+  </div>
+  <div class="qhead"><h3>Questions: SHM</h3><p>Turn a card over to check your answer.</p></div>
+  <div class="qgrid" data-qset="shm"></div>
+</section>
+
+<!-- ============ RESONANCE ============ -->
+<section class="panel" role="tabpanel" data-panel="resonance" hidden>
+  <div class="panel-head"><div><div class="eyebrow">Forced vibrations</div><h2>Damping and resonance</h2>
+  <p>A driver shakes the top of a spring with a fixed small amplitude. Change the driving frequency and the damping to see the amplitude response and the phase lag.</p></div></div>
+  <div class="lab">
+    <div class="scope">
+      <div class="scope-bar"><span>driver (top) · oscillator (bottom) · response curve</span><button class="pause" data-pause="resonance">Pause</button></div>
+      <canvas id="c-resonance" aria-label="Driven oscillator and resonance curve"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="rs-f">Driving frequency ÷ natural frequency <output id="rs-f-o"></output></label><input type="range" id="rs-f" min="0.20" max="2.00" step="0.01" value="0.60"></div>
+        <div class="ctl"><label for="rs-z">Damping <output id="rs-z-o"></output></label><input type="range" id="rs-z" min="0.05" max="1.00" step="0.01" value="0.10"></div>
+      </div>
+      <dl class="readout" id="rs-read"></dl>
+      <div class="status" id="rs-status"></div>
+    </div>
+    <div class="notes">
+      <div class="eqbox"><h3>Key ideas</h3><div class="eq"><span>resonance: f<sub>driving</sub> = f<sub>natural</sub></span><span>at resonance the oscillator lags by π/2</span></div></div>
+      <div><h3>Breaking it down</h3><ol class="steps">
+        <li><div><b>Free vibration:</b> no external force after release; it oscillates at its natural frequency. <b>Forced vibration:</b> a periodic driving force makes it oscillate at the <b>driving</b> frequency.</div></li>
+        <li><div><b>Resonance:</b> when the driving frequency equals the natural frequency, energy transfer is most efficient and amplitude is greatest.</div></li>
+        <li><div>Phase: well below resonance the oscillator moves in phase with the driver. At resonance it lags by π/2. Well above, it lags by π (antiphase).</div></li>
+        <li><div><b>More damping:</b> lower peak amplitude, a broader peak, and the peak moves slightly below the natural frequency.</div></li>
+        <li><div><b>Light damping:</b> amplitude decays slowly, period unchanged. <b>Critical damping:</b> returns to equilibrium in the shortest time without oscillating (car suspension). <b>Overdamping:</b> returns more slowly, no oscillation.</div></li>
+      </ol></div>
+      <div class="traps"><h3>Common traps</h3><ul>
+        <li>Saying the oscillator vibrates at its natural frequency when forced. It vibrates at the driving frequency.</li>
+        <li>Forgetting that heavy damping also shifts the peak to a lower frequency.</li>
+        <li>Mixing up critical and heavy (over) damping.</li>
+      </ul></div>
+      <p class="try"><b>Try this:</b> set damping to 0.05 and sweep the frequency through 1.00. Watch the phase lag swing from 0° to 180°.</p>
+    </div>
+  </div>
+  <div class="qhead"><h3>Questions: damping and resonance</h3><p>Turn a card over to check your answer.</p></div>
+  <div class="qgrid" data-qset="resonance"></div>
+</section>
+
+<!-- ============ GASES ============ -->
+<section class="panel" role="tabpanel" data-panel="gases" hidden>
+  <div class="panel-head"><div><div class="eyebrow">Ideal gases and kinetic theory</div><h2>Ideal gases</h2>
+  <p>Nitrogen molecules in a container. Change temperature, volume and amount of gas, and watch the pressure. The graph below shows pressure against Celsius temperature at the current volume, extrapolated to absolute zero.</p></div></div>
+  <div class="lab">
+    <div class="scope">
+      <div class="scope-bar"><span>gas: nitrogen, M = 0.028 kg mol⁻¹</span><button class="pause" data-pause="gases">Pause</button></div>
+      <canvas id="c-gases" aria-label="Gas molecules in a box with pressure graph"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="gs-T">Temperature T <output id="gs-T-o"></output></label><input type="range" id="gs-T" min="100" max="600" step="5" value="300"></div>
+        <div class="ctl"><label for="gs-V">Volume V <output id="gs-V-o"></output></label><input type="range" id="gs-V" min="1.0" max="5.0" step="0.1" value="2.5"></div>
+        <div class="ctl"><label for="gs-n">Amount n <output id="gs-n-o"></output></label><input type="range" id="gs-n" min="0.02" max="0.20" step="0.01" value="0.10"></div>
+      </div>
+      <dl class="readout" id="gs-read"></dl>
+    </div>
+    <div class="notes">
+      <div class="eqbox"><h3>Key equations</h3><div class="eq"><span>pV = nRT = NkT</span><span>pV = ⅓Nm(c<sub>rms</sub>)²</span><span>½m(c<sub>rms</sub>)² = 3/2 kT = 3RT/2N<sub>A</sub></span><span>W = pΔV</span></div></div>
+      <div><h3>Breaking it down</h3><ol class="steps">
+        <li><div>Temperatures must be in <b>kelvin</b>: T(K) = θ(°C) + 273. Absolute zero (0 K) is where an ideal gas would have zero pressure and its molecules minimum kinetic energy.</div></li>
+        <li><div>The gas laws: Boyle (pV constant at constant T), Charles (V/T constant at constant p), pressure law (p/T constant at constant V).</div></li>
+        <li><div><b>Pressure from molecules:</b> molecules hit the wall and change momentum. Force = rate of change of momentum. Pressure = total force ÷ area.</div></li>
+        <li><div>Hotter gas: molecules move faster, so they hit the walls <b>more often</b> and with <b>bigger momentum changes</b>. Both raise pressure.</div></li>
+        <li><div>Mean kinetic energy of a molecule depends <b>only on T</b>, not on the type of gas. Heavier molecules move more slowly at the same T.</div></li>
+        <li><div><b>Assumptions:</b> large number of molecules in random motion; molecular volume negligible; elastic collisions; collision time negligible; no forces between molecules except during collisions.</div></li>
+      </ol></div>
+      <div class="traps"><h3>Common traps</h3><ul>
+        <li>Using °C in pV = nRT. Doubling 20 °C to 40 °C does not double the pressure.</li>
+        <li>Mixing n (moles, with R) and N (molecules, with k).</li>
+        <li>Mass of one molecule = M / N<sub>A</sub>. M must be in kg mol⁻¹.</li>
+        <li>c<sub>rms</sub> is not the mean speed. Square the speeds, average, then square-root.</li>
+      </ul></div>
+      <p class="try"><b>Try this:</b> double T and watch the pressure. Then put T back and halve V. Compare the two pressure changes.</p>
+    </div>
+  </div>
+  <div class="qhead"><h3>Questions: ideal gases</h3><p>Turn a card over to check your answer.</p></div>
+  <div class="qgrid" data-qset="gases"></div>
+</section>
+
+<!-- ============ HEAT ============ -->
+<section class="panel" role="tabpanel" data-panel="heat" hidden>
+  <div class="panel-head"><div><div class="eyebrow">Thermal energy transfer</div><h2>Specific and latent heat</h2>
+  <p>Ice at −20 °C is heated at constant power until all of it has boiled away. Press Play to run the heating curve; change the mass and the heater power to see how each stage's time changes.</p></div></div>
+  <div class="lab">
+    <div class="scope">
+      <div class="scope-bar"><span>temperature against time · no heat loss</span><button class="pause" data-pause="heat">Pause</button></div>
+      <canvas id="c-heat" aria-label="Heating curve for water"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="ht-m">Mass m <output id="ht-m-o"></output></label><input type="range" id="ht-m" min="0.10" max="1.00" step="0.05" value="0.20"></div>
+        <div class="ctl"><label for="ht-P">Heater power P <output id="ht-P-o"></output></label><input type="range" id="ht-P" min="200" max="3000" step="50" value="1000"></div>
+      </div>
+      <dl class="readout" id="ht-read"></dl>
+      <div class="status" id="ht-status"></div>
+    </div>
+    <div class="notes">
+      <div class="eqbox"><h3>Key equations</h3><div class="eq"><span>Q = mcΔθ</span><span>Q = ml</span><span>Q = Pt</span></div>
+        <div class="eq" style="margin-top:6px;font-size:13px;color:var(--muted)"><span>c<sub>ice</sub> = 2100</span><span>c<sub>water</sub> = 4200 J kg⁻¹ K⁻¹</span><span>l<sub>f</sub> = 3.34×10⁵</span><span>l<sub>v</sub> = 2.26×10⁶ J kg⁻¹</span></div></div>
+      <div><h3>Breaking it down</h3><ol class="steps">
+        <li><div><b>Internal energy</b> is the sum of the randomly distributed kinetic and potential energies of the molecules.</div></li>
+        <li><div>On the sloping parts, energy raises the <b>kinetic</b> energy of the molecules, so temperature rises. Use Q = mcΔθ.</div></li>
+        <li><div>On the flat parts (melting, boiling), energy raises <b>potential</b> energy by breaking bonds. Temperature stays constant. Use Q = ml.</div></li>
+        <li><div>Vaporisation takes far more energy than melting: the molecules have to separate completely.</div></li>
+        <li><div>For a <b>continuous flow</b> heater, use mass per second: P = (m/t)cΔθ.</div></li>
+        <li><div>For mixing problems, energy lost by the hot object = energy gained by the cold one (if no heat loss).</div></li>
+      </ol></div>
+      <div class="traps"><h3>Common traps</h3><ul>
+        <li>Missing a stage. Ice at −10 °C to water at 20 °C needs three calculations: warm the ice, melt it, warm the water.</li>
+        <li>Thinking temperature is rising during a change of state.</li>
+        <li>Heat losses make an experimental c come out <b>too high</b>, since more energy was supplied than the block absorbed.</li>
+      </ul></div>
+      <p class="try"><b>Try this:</b> compare the time to melt the ice with the time to boil the water away. Which latent heat is bigger, and by how much?</p>
+    </div>
+  </div>
+  <div class="qhead"><h3>Questions: specific and latent heat</h3><p>Turn a card over to check your answer.</p></div>
+  <div class="qgrid" data-qset="heat"></div>
+</section>
+
+<!-- ============ PRACTICE ============ -->
+<section class="panel" role="tabpanel" data-panel="practice" hidden>
+  <div class="panel-head"><div><div class="eyebrow">Mixed exam-style questions</div><h2>Exam practice</h2>
+  <p>A-level style questions across section 3.6: multiple choice, calculations, explanations and extended response. Write your answer down first, then turn the card over to mark it.</p></div></div>
+  <div class="filters" id="filters">
+    <button class="chip" aria-pressed="true" data-f="all">All</button>
+    <button class="chip" aria-pressed="false" data-f="mc">Multiple choice</button>
+    <button class="chip" aria-pressed="false" data-f="circular">Circular</button>
+    <button class="chip" aria-pressed="false" data-f="shm">SHM</button>
+    <button class="chip" aria-pressed="false" data-f="resonance">Resonance</button>
+    <button class="chip" aria-pressed="false" data-f="gases">Gases</button>
+    <button class="chip" aria-pressed="false" data-f="heat">Thermal energy</button>
+    <button class="chip" aria-pressed="false" data-f="extended">6-mark</button>
+    <span class="tally" id="tally"></span>
+    <button class="ghost" id="reset">Turn all cards back</button>
+  </div>
+  <div class="qgrid" data-qset="practice"></div>
+</section>
+</main>
+
+<div class="wrap"><footer>Built for AQA 7408 revision. Use g = 9.81 N kg⁻¹, R = 8.31 J mol⁻¹ K⁻¹, k = 1.38 × 10⁻²³ J K⁻¹, N<sub>A</sub> = 6.02 × 10²³ mol⁻¹ unless a question says otherwise.</footer></div>
+
+<script>
+const Q={
+circular:[
+ {m:2,q:`<p>A record turns at 33⅓ revolutions per minute. Calculate its angular speed in rad s⁻¹.</p>`,
+  a:`<div class="work">ω = 33.3 × 2π / 60</div><p class="final">ω = 3.49 rad s⁻¹</p>`},
+ {m:3,q:`<p>A car of mass 1200 kg goes round a flat bend of radius 50 m at 15 m s⁻¹.</p><p>Calculate the centripetal force needed and state what provides it.</p>`,
+  a:`<div class="work">F = mv²/r = 1200 × 15² / 50</div><p class="final">F = 5400 N, provided by friction between the tyres and the road.</p>`},
+ {m:3,q:`<p>A bucket of water is swung in a vertical circle of radius 0.90 m. Calculate the minimum speed at the top for the water to stay in the bucket.</p>`,
+  a:`<div class="work">at minimum speed, weight alone provides the centripetal force
+mg = mv²/r → v = √(gr) = √(9.81 × 0.90)</div><p class="final">v = 2.97 m s⁻¹</p>`},
+ {m:3,q:`<p>A 0.20 kg mass on a string moves in a vertical circle of radius 0.50 m. At the bottom its speed is 4.0 m s⁻¹. Calculate the tension at the bottom.</p>`,
+  a:`<div class="work">T − mg = mv²/r
+T = 0.20 × 9.81 + 0.20 × 4.0² / 0.50 = 1.96 + 6.40</div><p class="final">T = 8.4 N</p>`},
+ {m:3,q:`<p>Explain why an object moving in a circle at constant speed is accelerating, and why its speed does not change.</p>`,
+  a:`<ul><li>Velocity is a vector; its direction changes continuously, so velocity changes, so there is an acceleration.</li><li>The acceleration (and resultant force) is towards the centre.</li><li>The force is perpendicular to the velocity, so no work is done on the object and its kinetic energy (speed) stays constant.</li></ul>`}
+],
+shm:[
+ {m:2,q:`<p>A 0.40 kg mass hangs on a spring of spring constant 25 N m⁻¹. Calculate the period of oscillation.</p>`,
+  a:`<div class="work">T = 2π√(m/k) = 2π√(0.40/25)</div><p class="final">T = 0.79 s</p>`},
+ {m:3,q:`<p>An object moves with SHM of amplitude 0.050 m and frequency 2.0 Hz. Calculate its maximum speed and maximum acceleration.</p>`,
+  a:`<div class="work">ω = 2πf = 4π = 12.6 rad s⁻¹
+v<sub>max</sub> = ωA = 12.6 × 0.050
+a<sub>max</sub> = ω²A = 12.6² × 0.050</div><p class="final">v<sub>max</sub> = 0.63 m s⁻¹, a<sub>max</sub> = 7.9 m s⁻²</p>`},
+ {m:2,q:`<p>For the object in the previous question, calculate its speed when the displacement is 0.030 m.</p>`,
+  a:`<div class="work">v = ω√(A² − x²) = 12.6 × √(0.050² − 0.030²) = 12.6 × 0.040</div><p class="final">v = 0.50 m s⁻¹</p>`},
+ {m:2,q:`<p>Calculate the length of a simple pendulum with a period of 2.0 s.</p>`,
+  a:`<div class="work">T = 2π√(l/g) → l = gT²/4π² = 9.81 × 4.0 / 39.5</div><p class="final">l = 0.99 m</p>`},
+ {m:2,q:`<p>State the phase difference between (a) velocity and displacement, (b) acceleration and displacement, for an object in SHM.</p>`,
+  a:`<p class="final">(a) π/2 rad (velocity leads)  (b) π rad (antiphase)</p>`},
+ {m:2,q:`<p>Explain why the equation for the period of a simple pendulum only applies to small amplitudes.</p>`,
+  a:`<p>The restoring force is mg sin θ. Only for small angles is sin θ ≈ θ (in radians), so that the acceleration is proportional to displacement, which is the condition for SHM.</p>`}
+],
+resonance:[
+ {m:3,q:`<p>Describe how increasing the damping changes the graph of amplitude against driving frequency for a forced oscillator.</p>`,
+  a:`<ul><li>Lower amplitude at all frequencies, especially the peak.</li><li>The peak becomes broader (flatter).</li><li>The peak occurs at a slightly lower frequency.</li></ul>`},
+ {m:2,q:`<p>State the phase difference between the driver and the oscillator (a) at resonance, (b) at a driving frequency far above resonance.</p>`,
+  a:`<p class="final">(a) π/2 rad (oscillator lags)  (b) π rad (antiphase)</p>`},
+ {m:2,q:`<p>What is critical damping? Give an example of where it is used.</p>`,
+  a:`<p>The system returns to equilibrium in the shortest possible time without oscillating. Example: car suspension (also accepted: moving-coil meters, door closers).</p>`},
+ {m:2,q:`<p>Give one example where resonance is useful and one where it causes a problem.</p>`,
+  a:`<p>Useful: musical instruments, radio tuning circuits, microwave ovens, MRI. Problem: bridges or buildings swaying (e.g. in wind or with marching soldiers), vibrating car panels, machinery.</p>`},
+ {m:2,q:`<p>Distinguish between free and forced vibrations.</p>`,
+  a:`<p><b>Free:</b> no external periodic force after the system is set going; it vibrates at its natural frequency. <b>Forced:</b> a periodic external force acts; the system vibrates at the driving frequency.</p>`}
+],
+gases:[
+ {m:2,q:`<p>Calculate the number of moles in 0.024 m³ of an ideal gas at 100 kPa and 290 K.</p>`,
+  a:`<div class="work">n = pV/RT = 1.00×10⁵ × 0.024 / (8.31 × 290)</div><p class="final">n = 1.0 mol</p>`},
+ {m:3,q:`<p>Calculate the mean kinetic energy of a gas molecule at 300 K. Hence find the rms speed of a nitrogen molecule (mass 4.65 × 10⁻²⁶ kg).</p>`,
+  a:`<div class="work">E<sub>k</sub> = 3/2 kT = 1.5 × 1.38×10⁻²³ × 300 = 6.21 × 10⁻²¹ J
+c<sub>rms</sub> = √(2E<sub>k</sub>/m) = √(2 × 6.21×10⁻²¹ / 4.65×10⁻²⁶)</div><p class="final">6.2 × 10⁻²¹ J; c<sub>rms</sub> = 520 m s⁻¹</p>`},
+ {m:2,q:`<p>A sealed container of gas at 1.0 × 10⁵ Pa is heated from 20 °C to 80 °C. Calculate the new pressure.</p>`,
+  a:`<div class="work">p/T constant: p₂ = 1.0×10⁵ × 353/293</div><p class="final">p₂ = 1.2 × 10⁵ Pa</p><p>Trap: using 80/20 gives a wrong answer of 4.0 × 10⁵ Pa.</p>`},
+ {m:4,q:`<p>State four assumptions of the kinetic theory model of an ideal gas.</p>`,
+  a:`<p>Any four:</p><ul><li>Large number of molecules in random, rapid motion.</li><li>Volume of molecules negligible compared with the container.</li><li>Collisions are elastic.</li><li>Time of a collision negligible compared with time between collisions.</li><li>No forces between molecules except during collisions.</li><li>Newton's laws apply.</li></ul>`},
+ {m:3,q:`<p>Use kinetic theory to explain why the pressure of a gas in a sealed container rises when its temperature rises.</p>`,
+  a:`<ul><li>Higher T means a higher mean kinetic energy, so molecules move faster.</li><li>They hit the walls more often and with a larger change of momentum each time.</li><li>Rate of change of momentum (force) on the walls increases, so pressure = F/A increases.</li></ul>`},
+ {m:2,q:`<p>What does Brownian motion of smoke particles show, and why are the particles seen to move?</p>`,
+  a:`<p>It is evidence for the existence of atoms/molecules. Smoke particles are hit unevenly by many fast-moving, invisible air molecules, so they move in a random, jerky path.</p>`}
+],
+heat:[
+ {m:2,q:`<p>Calculate the energy needed to heat 0.50 kg of water from 20 °C to 100 °C.</p>`,
+  a:`<div class="work">Q = mcΔθ = 0.50 × 4200 × 80</div><p class="final">Q = 1.7 × 10⁵ J</p>`},
+ {m:3,q:`<p>A 2.0 kW kettle has boiling water in it. How long does it take to turn 0.30 kg of the water into steam?</p>`,
+  a:`<div class="work">Q = ml = 0.30 × 2.26×10⁶ = 6.78 × 10⁵ J
+t = Q/P = 6.78×10⁵ / 2000</div><p class="final">t = 340 s</p>`},
+ {m:3,q:`<p>Calculate the energy needed to turn 0.10 kg of ice at −10 °C into water at 20 °C.</p>`,
+  a:`<div class="work">warm ice:   0.10 × 2100 × 10    =  2 100 J
+melt:       0.10 × 3.34×10⁵     = 33 400 J
+warm water: 0.10 × 4200 × 20    =  8 400 J</div><p class="final">Total = 4.4 × 10⁴ J</p>`},
+ {m:2,q:`<p>Explain why the temperature of ice stays constant while it melts, even though energy is being supplied.</p>`,
+  a:`<p>The energy breaks bonds between molecules, increasing their <b>potential</b> energy, not their kinetic energy. Temperature depends on mean kinetic energy, so it does not rise.</p>`},
+ {m:2,q:`<p>Water flows through a 3.0 kW electric shower at 0.050 kg s⁻¹. Calculate the temperature rise of the water.</p>`,
+  a:`<div class="work">P = (m/t) c Δθ → Δθ = 3000 / (0.050 × 4200)</div><p class="final">Δθ = 14 K</p>`},
+ {m:3,q:`<p>0.20 kg of water at 80 °C is mixed with 0.30 kg of water at 20 °C. Calculate the final temperature, assuming no heat loss.</p>`,
+  a:`<div class="work">0.20 × c × (80 − θ) = 0.30 × c × (θ − 20)
+16 − 0.20θ = 0.30θ − 6 → 0.50θ = 22</div><p class="final">θ = 44 °C</p>`}
+],
+practice:[
+ {t:"circular mc",m:1,q:`<p>What is the angular speed of the second hand of a clock?</p><ol class="opts"><li>0.017 rad s⁻¹</li><li>0.105 rad s⁻¹</li><li>1.0 rad s⁻¹</li><li>6.28 rad s⁻¹</li></ol>`,
+  a:`<p class="final">B</p><div class="work">ω = 2π/60 = 0.105 rad s⁻¹</div>`},
+ {t:"circular",m:3,q:`<p>A fairground ride carries a 60 kg passenger in a horizontal circle of radius 6.0 m, once every 4.0 s. Calculate the passenger's speed and the resultant force on them.</p>`,
+  a:`<div class="work">ω = 2π/4.0 = 1.57 rad s⁻¹
+v = ωr = 9.4 m s⁻¹
+F = mω²r = 60 × 1.57² × 6.0</div><p class="final">v = 9.4 m s⁻¹, F = 890 N towards the centre</p>`},
+ {t:"circular",m:3,q:`<p>A car drives over a hump-backed bridge whose top is part of a circle of radius 20 m. Calculate the maximum speed at which the car stays in contact with the road at the top.</p>`,
+  a:`<div class="work">contact lost when normal reaction = 0, so mg = mv²/r
+v = √(gr) = √(9.81 × 20)</div><p class="final">v = 14 m s⁻¹</p>`},
+ {t:"circular",m:3,q:`<p>A roller-coaster loop has radius 8.0 m. Calculate the minimum speed at the top of the loop, and the minimum height above the top of the loop from which the car must start from rest (ignore friction).</p>`,
+  a:`<div class="work">v<sub>min</sub> = √(gr) = √(9.81 × 8.0) = 8.9 m s⁻¹
+mgh = ½mv² → h = v²/2g = r/2</div><p class="final">8.9 m s⁻¹; 4.0 m above the top of the loop</p>`},
+ {t:"shm mc",m:1,q:`<p>For an object in SHM, which graph is a straight line through the origin with a negative gradient?</p><ol class="opts"><li>velocity against displacement</li><li>acceleration against displacement</li><li>kinetic energy against displacement</li><li>acceleration against velocity</li></ol>`,
+  a:`<p class="final">B</p><p>a = −ω²x, so the gradient is −ω².</p>`},
+ {t:"shm",m:3,q:`<p>A 0.50 kg mass oscillates on a spring of k = 200 N m⁻¹ with amplitude 0.040 m. Calculate the total energy, and the kinetic energy when the displacement is 0.020 m.</p>`,
+  a:`<div class="work">E = ½kA² = 0.5 × 200 × 0.040² = 0.16 J
+E<sub>p</sub> at 0.020 m = ½ × 200 × 0.020² = 0.04 J
+E<sub>k</sub> = 0.16 − 0.04</div><p class="final">0.16 J; 0.12 J</p>`},
+ {t:"shm",m:2,q:`<p>A mass-spring system and a simple pendulum both have a period of 1.0 s on Earth. They are taken to the Moon. State and explain what happens to each period.</p>`,
+  a:`<p>Mass-spring: <b>unchanged</b>, because T = 2π√(m/k) does not depend on g. Pendulum: <b>increases</b>, because T = 2π√(l/g) and g is smaller.</p>`},
+ {t:"shm",m:2,q:`<p>Calculate the period and frequency of a simple pendulum of length 0.80 m.</p>`,
+  a:`<div class="work">T = 2π√(0.80/9.81)</div><p class="final">T = 1.8 s, f = 0.56 Hz</p>`},
+ {t:"shm",m:3,q:`<p>The displacement of an oscillator is x = 0.060 cos(5πt), with x in m and t in s. State the amplitude and frequency, and calculate x at t = 0.10 s.</p>`,
+  a:`<div class="work">ω = 5π → f = ω/2π = 2.5 Hz
+x = 0.060 cos(0.5π) = 0.060 × 0</div><p class="final">A = 0.060 m, f = 2.5 Hz, x = 0 (at equilibrium)</p><p>Trap: calculator in degrees gives 0.060 m.</p>`},
+ {t:"shm",m:3,q:`<p>A 0.25 kg mass hung on a spring stretches it by 0.098 m. It is pulled down and released. Calculate the period of its oscillations.</p>`,
+  a:`<div class="work">k = mg/x = 0.25 × 9.81 / 0.098 = 25 N m⁻¹
+T = 2π√(m/k) = 2π√(0.25/25)</div><p class="final">T = 0.63 s</p>`},
+ {t:"resonance mc",m:1,q:`<p>At resonance, the phase difference between the driving force's displacement and the oscillator's displacement is:</p><ol class="opts"><li>0</li><li>π/4</li><li>π/2</li><li>π</li></ol>`,
+  a:`<p class="final">C</p>`},
+ {t:"resonance",m:3,q:`<p>Soldiers are ordered to break step when marching across a bridge. Explain why.</p>`,
+  a:`<ul><li>Marching in step applies a periodic driving force to the bridge.</li><li>If the marching frequency equals a natural frequency of the bridge, resonance occurs.</li><li>The amplitude of oscillation becomes very large, which could damage the bridge.</li></ul>`},
+ {t:"gases",m:2,q:`<p>A gas cylinder of volume 0.050 m³ contains gas at 2.0 MPa and 290 K. Calculate the number of molecules.</p>`,
+  a:`<div class="work">N = pV/kT = 2.0×10⁶ × 0.050 / (1.38×10⁻²³ × 290)</div><p class="final">N = 2.5 × 10²⁵</p>`},
+ {t:"gases",m:2,q:`<p>Helium (M = 4 g mol⁻¹) and neon (M = 20 g mol⁻¹) are at the same temperature. Calculate the ratio c<sub>rms</sub>(He) / c<sub>rms</sub>(Ne).</p>`,
+  a:`<div class="work">same mean KE: ½m c² equal → c ∝ 1/√m
+ratio = √(20/4) = √5</div><p class="final">2.2</p>`},
+ {t:"gases",m:2,q:`<p>A gas is at 27 °C. To what temperature (in °C) must it be heated to double the mean kinetic energy of its molecules?</p>`,
+  a:`<div class="work">27 °C = 300 K; KE ∝ T → 600 K</div><p class="final">327 °C</p><p>Trap: 54 °C.</p>`},
+ {t:"gases",m:1,q:`<p>A gas expands by 2.0 × 10⁻³ m³ at a constant pressure of 1.0 × 10⁵ Pa. Calculate the work done by the gas.</p>`,
+  a:`<div class="work">W = pΔV = 1.0×10⁵ × 2.0×10⁻³</div><p class="final">200 J</p>`},
+ {t:"gases",m:2,q:`<p>Describe how a graph of pressure against temperature (in °C) for a fixed mass of gas at constant volume can be used to find absolute zero.</p>`,
+  a:`<p>Plot p against θ for several temperatures; the points lie on a straight line. Extrapolate the line back to p = 0. The temperature where it crosses the axis is absolute zero, about −273 °C.</p>`},
+ {t:"gases mc",m:1,q:`<p>The pressure of a fixed mass of gas is doubled at constant temperature. The volume:</p><ol class="opts"><li>doubles</li><li>stays the same</li><li>halves</li><li>quarters</li></ol>`,
+  a:`<p class="final">C</p><p>Boyle's law: pV is constant.</p>`},
+ {t:"heat",m:3,q:`<p>A 50 W heater is used for 300 s to heat a 1.0 kg aluminium block from 20.0 °C to 36.5 °C. Calculate the specific heat capacity of aluminium, and explain whether the true value is higher or lower.</p>`,
+  a:`<div class="work">Q = Pt = 50 × 300 = 15 000 J
+c = Q/(mΔθ) = 15 000 / (1.0 × 16.5)</div><p class="final">c = 910 J kg⁻¹ K⁻¹</p><p>The true value is lower: some energy was lost to the surroundings, so less than 15 000 J went into the block.</p>`},
+ {t:"heat mc",m:1,q:`<p>Compare 1 kg of water at 100 °C with 1 kg of steam at 100 °C.</p><ol class="opts"><li>Same internal energy</li><li>Steam has more internal energy</li><li>Water has more internal energy</li><li>Steam has molecules with more kinetic energy</li></ol>`,
+  a:`<p class="final">B</p><p>Same temperature (same mean KE), but steam's molecules have more potential energy because the latent heat of vaporisation has been added.</p>`},
+ {t:"heat",m:2,q:`<p>Define internal energy.</p>`,
+  a:`<p>The sum of the randomly distributed kinetic energies and potential energies of the molecules in a system.</p>`},
+ {t:"shm extended",m:6,q:`<p>Describe an experiment to investigate how the period of a mass-spring system depends on the mass, and explain how you would use the results to find the spring constant.</p>`,
+  a:`<p><b>Level 3 answer covers:</b></p><ul><li>Spring hung from a clamp stand; slotted masses added in steps (e.g. 100 g).</li><li>Displace slightly and release; time 10 oscillations with a stopwatch, divide by 10. Repeat and average.</li><li>Use a fiducial marker at the equilibrium position to start and stop timing.</li><li>Keep amplitude small and the oscillations vertical.</li><li>T² = (4π²/k) m, so plot T² against m: a straight line through the origin.</li><li>k = 4π² / gradient.</li><li>Safety: G-clamp the stand to the bench; cushion beneath the masses.</li></ul>`},
+ {t:"resonance extended",m:6,q:`<p>Describe and explain how the amplitude of a forced oscillator varies as the driving frequency is increased from well below to well above its natural frequency. Include the effect of damping.</p>`,
+  a:`<p><b>Level 3 answer covers:</b></p><ul><li>At low frequency: small amplitude, oscillator roughly in phase with the driver.</li><li>As f approaches f₀, amplitude rises: energy transfer from driver becomes more efficient.</li><li>At f = f₀: resonance, maximum amplitude, oscillator lags driver by π/2.</li><li>Above f₀: amplitude falls, approaching antiphase (π) at high frequencies.</li><li>Damping removes energy: lower and broader peak, peak shifts slightly below f₀.</li><li>Light damping gives a sharp, tall peak.</li></ul>`},
+ {t:"gases extended",m:6,q:`<p>Explain how the kinetic theory model accounts for the pressure exerted by a gas, and how this leads to the idea that temperature is a measure of the mean kinetic energy of the molecules.</p>`,
+  a:`<p><b>Level 3 answer covers:</b></p><ul><li>Molecules move randomly and collide elastically with the walls.</li><li>Each collision reverses the momentum component normal to the wall: Δp = 2mu.</li><li>Force on the wall = rate of change of momentum, summed over many molecules.</li><li>Pressure = force/area; leads to pV = ⅓Nm(c<sub>rms</sub>)².</li><li>Comparing with pV = NkT gives ½m(c<sub>rms</sub>)² = 3/2 kT.</li><li>So mean KE ∝ absolute temperature, independent of the gas.</li></ul>`}
+]};
+/* ---------------- render cards ---------------- */
+function card(item, idx, label){
+  const el=document.createElement('article');
+  el.className='qcard';
+  el.dataset.tags=item.t||'';
+  el.innerHTML=`<div class="qmeta"><span class="side">${label} ${idx+1}</span><span class="mk">${item.m} mark${item.m>1?'s':''}</span></div>
+    <div class="qbody front">${item.q}</div>
+    <div class="qbody ans back" hidden><div class="tagline" style="margin-bottom:6px">Answer</div>${item.a}</div>
+    <button class="flip" type="button">Show answer</button>`;
+  const btn=el.querySelector('.flip'),front=el.querySelector('.front'),back=el.querySelector('.back'),side=el.querySelector('.side');
+  btn.addEventListener('click',()=>{
+    const show=back.hidden; back.hidden=!show; front.hidden=show;
+    el.classList.toggle('flipped',show);
+    btn.textContent=show?'Back to question':'Show answer';
+    side.textContent=(show?'Answer ':label+' ')+(idx+1);
+  });
+  return el;
+}
+document.querySelectorAll('[data-qset]').forEach(g=>{
+  const set=g.dataset.qset; const lab=set==='practice'?'P':'Q';
+  Q[set].forEach((it,i)=>g.appendChild(card(it,i,lab)));
+});
+/* practice filters */
+const pgrid=document.querySelector('[data-qset="practice"]');
+function applyFilter(f){
+  let n=0,marks=0;
+  pgrid.querySelectorAll('.qcard').forEach((c,i)=>{
+    const show=f==='all'||c.dataset.tags.split(' ').includes(f);
+    c.hidden=!show; if(show){n++;marks+=Q.practice[i].m}
+  });
+  document.getElementById('tally').textContent=`${n} questions · ${marks} marks`;
+}
+document.getElementById('filters').addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b)return;
+  document.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b));
+  applyFilter(b.dataset.f);
+});
+document.getElementById('reset').addEventListener('click',()=>{
+  pgrid.querySelectorAll('.qcard.flipped .flip').forEach(b=>b.click());
+});
+applyFilter('all');
+
+/* ---------------- theme tokens ---------------- */
+let C={};
+function readTokens(){const s=getComputedStyle(document.documentElement);
+  ['paper','surface','ink','muted','line','grid','accent','accent-soft','wave2','node','good'].forEach(n=>C[n]=s.getPropertyValue('--'+n).trim());}
+readTokens();
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',readTokens)}catch(e){}
+new MutationObserver(readTokens).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','class','style']});
+function hexRgb(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return[(n>>16)&255,(n>>8)&255,n&255]}
+function alpha(hex,a){const[r,g,b]=hexRgb(hex);return `rgba(${r},${g},${b},${a})`}
+function nmRgb(nm){let r=0,g=0,b=0;
+  if(nm<440){r=-(nm-440)/40;b=1}else if(nm<490){g=(nm-440)/50;b=1}else if(nm<510){g=1;b=-(nm-510)/20}
+  else if(nm<580){r=(nm-510)/70;g=1}else if(nm<645){r=1;g=-(nm-645)/65}else{r=1}
+  let f=nm<420?0.3+0.7*(nm-380)/40:nm>680?0.3+0.7*(780-nm)/100:1;
+  return [Math.round(255*r*f),Math.round(255*g*f),Math.round(255*b*f)];}
+const rgbStr=(c,a=1)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+
+/* ---------------- canvas helpers ---------------- */
+function sizeCanvas(c,aspect,minH){
+  const w=c.clientWidth||c.parentElement.clientWidth; const h=Math.max(minH||0,Math.round(w*aspect));
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  if(c._w!==w||c._h!==h){c.style.height=h+'px';c.width=Math.round(w*dpr);c.height=Math.round(h*dpr);c._w=w;c._h=h}
+  const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w,h};
+}
+function bg(ctx,w,h){ctx.fillStyle=C.surface;ctx.fillRect(0,0,w,h);ctx.strokeStyle=C.grid;ctx.lineWidth=1;ctx.beginPath();
+  for(let x=0.5;x<w;x+=20){ctx.moveTo(x,0);ctx.lineTo(x,h)}for(let y=0.5;y<h;y+=20){ctx.moveTo(0,y);ctx.lineTo(w,y)}ctx.stroke();}
+function label(ctx,t,x,y,col,align='center',size=12){ctx.fillStyle=col;ctx.font=`500 ${size}px "JetBrains Mono", monospace`;ctx.textAlign=align;ctx.textBaseline='middle';ctx.fillText(t,x,y)}
+function dot(ctx,x,y,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill()}
+function arrowHead(ctx,x,y,ang,s,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-s*Math.cos(ang-0.4),y-s*Math.sin(ang-0.4));ctx.lineTo(x-s*Math.cos(ang+0.4),y-s*Math.sin(ang+0.4));ctx.closePath();ctx.fill()}
+const $=id=>document.getElementById(id);
+function seg(id,cb){const s=$(id);s.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;s.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));cb(b.dataset.v)})}
+const fmt=(x,d=2)=>Number(x).toFixed(d);
+function sci(x,d=2){if(x===0)return'0';const e=Math.floor(Math.log10(Math.abs(x)));const m=x/10**e;return `${m.toFixed(d)} × 10${String(e).replace('-','⁻').replace(/\d/g,c=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[c])}`}
+
+const sims={};const paused={};const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+
+/* ===== CIRCULAR ===== */
+(()=>{const st={mode:'H',r:0.8,v:4,m:0.5,phi:0};const cv=$('c-circular');const g=9.81;
+  seg('cm-mode',v=>{st.mode=v;$('cm-v-l').firstChild.textContent=v==='H'?'Speed v ':'Speed at bottom ';upd()});
+  function vAt(phi){if(st.mode==='H')return st.v;const v2=st.v**2-2*g*st.r*(1-Math.cos(phi));return Math.sqrt(Math.max(0.0001,v2))}
+  function upd(){st.r=+$('cm-r').value;st.v=+$('cm-v').value;st.m=+$('cm-m').value;
+    $('cm-r-o').textContent=fmt(st.r)+' m';$('cm-v-o').textContent=fmt(st.v,1)+' m s⁻¹';$('cm-m-o').textContent=fmt(st.m)+' kg';
+    if(st.mode==='H'){const w=st.v/st.r;
+      $('cm-read').innerHTML=`<div><dt>ω</dt><dd>${fmt(w)} rad s⁻¹</dd></div><div><dt>period T</dt><dd>${fmt(2*Math.PI/w)} s</dd></div><div><dt>a = v²/r</dt><dd>${fmt(st.v**2/st.r,1)} m s⁻²</dd></div><div><dt>F = mv²/r</dt><dd>${fmt(st.m*st.v**2/st.r,1)} N</dd></div>`;
+      $('cm-status').innerHTML='<b>Resultant force towards the centre.</b> It is perpendicular to the velocity, so it changes direction but not speed.';}
+    else{const v2t=st.v**2-4*g*st.r;const Tb=st.m*st.v**2/st.r+st.m*g;const Tt=v2t>0?st.m*v2t/st.r-st.m*g:NaN;
+      $('cm-read').innerHTML=`<div><dt>v at top</dt><dd>${v2t>0?fmt(Math.sqrt(v2t))+' m s⁻¹':'—'}</dd></div><div><dt>√(gr)</dt><dd>${fmt(Math.sqrt(g*st.r))} m s⁻¹</dd></div><div><dt>T at bottom</dt><dd>${fmt(Tb,1)} N</dd></div><div><dt>T at top</dt><dd>${isNaN(Tt)?'—':fmt(Tt,1)+' N'}</dd></div>`;
+      $('cm-status').innerHTML=(v2t>0&&Tt>=0)?'<b>String stays taut.</b> At the top, weight and tension both point to the centre; at the bottom, tension must also support the weight.':'<b>String goes slack before the top.</b> v<sub>top</sub>² would be less than gr, so the mass leaves the circle. Increase the speed at the bottom.';}}
+  ['cm-r','cm-v','cm-m'].forEach(i=>$(i).addEventListener('input',upd));upd();
+  let lastT=0;
+  sims.circular={draw(t){const{ctx,w,h}=sizeCanvas(cv,0.62,260);bg(ctx,w,h);
+    const dt=Math.max(0,Math.min(0.05,t-lastT));lastT=t;
+    const cx=w/2,cy=h/2,R=Math.min(w,h)*0.33*(0.55+0.45*st.r/2);
+    const vis=Math.min(1,2.5/ (st.v/st.r));
+    st.phi+=vAt(st.phi)/st.r*dt*Math.min(1,vis+0.3);
+    const phi=st.phi; // measured from bottom, anticlockwise
+    const x=cx+R*Math.sin(phi),y=cy+R*Math.cos(phi);
+    ctx.setLineDash([4,5]);ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle=C.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.stroke();dot(ctx,cx,cy,4,C.ink);
+    const v=vAt(phi);const tx=Math.cos(phi),ty=-Math.sin(phi);const vl=18+v*7;
+    const arr=(x0,y0,dx,dy,len,col,lab)=>{const x1=x0+dx*len,y1=y0+dy*len;ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();arrowHead(ctx,x1,y1,Math.atan2(dy,dx),10,col);if(lab)label(ctx,lab,x1+dx*14,y1+dy*14,col,'center',12)};
+    arr(x,y,tx,ty,vl,C.accent,'v');
+    const nx=(cx-x)/R,ny=(cy-y)/R;
+    if(st.mode==='H'){arr(x,y,nx,ny,Math.min(R*0.75,14+Math.sqrt(st.v**2/st.r)*6),C.node,'a');label(ctx,'view from above',10,16,C.muted,'left',11)}
+    else{const g=9.81;const T=st.m*v*v/st.r+st.m*g*Math.cos(phi);const sc=Math.min(4,60/(st.m*st.v**2/st.r+st.m*g));
+      arr(x,y,0,1,st.m*g*sc,C.wave2,'W');if(T>0)arr(x,y,nx,ny,T*sc,C.node,'T');else label(ctx,'slack!',x,y-18,C.node,'center',12);
+      label(ctx,'top',cx,cy-R-14,C.muted,'center',11);label(ctx,'bottom',cx,cy+R+14,C.muted,'center',11);label(ctx,'side view',10,16,C.muted,'left',11)}
+    dot(ctx,x,y,9,C.ink);
+  }};
+})();
+
+/* ===== SHM ===== */
+(()=>{const st={m:0.5,k:20,A:0.06};const cv=$('c-shm');
+  function upd(){st.m=+$('sh-m').value;st.k=+$('sh-k').value;st.A=+$('sh-A').value;
+    $('sh-m-o').textContent=fmt(st.m)+' kg';$('sh-k-o').textContent=st.k+' N m⁻¹';$('sh-A-o').textContent=fmt(st.A)+' m';
+    const w=Math.sqrt(st.k/st.m);
+    $('sh-read').innerHTML=`<div><dt>period T</dt><dd>${fmt(2*Math.PI/w)} s</dd></div><div><dt>ω</dt><dd>${fmt(w)} rad s⁻¹</dd></div><div><dt>v<sub>max</sub> = ωA</dt><dd>${fmt(w*st.A,3)} m s⁻¹</dd></div><div><dt>a<sub>max</sub> = ω²A</dt><dd>${fmt(w*w*st.A)} m s⁻²</dd></div><div><dt>total energy ½kA²</dt><dd>${fmt(0.5*st.k*st.A**2,4)} J</dd></div>`;}
+  ['sh-m','sh-k','sh-A'].forEach(i=>$(i).addEventListener('input',upd));upd();
+  function spring(ctx,x1,x2,y,n,amp){ctx.beginPath();ctx.moveTo(x1,y);const L=x2-x1;for(let i=1;i<=n*2;i++){ctx.lineTo(x1+L*(i-0.5)/(n*2),y+(i%2?-amp:amp))}ctx.lineTo(x2,y);ctx.stroke()}
+  sims.shm={draw(t){const{ctx,w,h}=sizeCanvas(cv,0.78,320);bg(ctx,w,h);
+    const om=Math.sqrt(st.k/st.m);const x=st.A*Math.cos(om*t),v=-om*st.A*Math.sin(om*t),a=-om*om*x;
+    // top scene
+    const sy=h*0.16,wall=24,eq=w*0.5,scale=(w*0.3)/0.10,bx=eq+x*scale,bw=46;
+    ctx.fillStyle=C.ink;ctx.fillRect(wall-8,sy-30,8,60);ctx.strokeStyle=C.line;ctx.beginPath();ctx.moveTo(wall,sy+24);ctx.lineTo(w-10,sy+24);ctx.stroke();
+    ctx.strokeStyle=C.muted;ctx.lineWidth=1.6;spring(ctx,wall,bx-bw/2,sy,10,9);
+    ctx.fillStyle=C.accent;ctx.fillRect(bx-bw/2,sy-22,bw,44);label(ctx,'m',bx,sy,C.surface,'center',13);
+    ctx.setLineDash([3,4]);ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(eq,sy-34);ctx.lineTo(eq,sy+30);ctx.stroke();
+    [-1,1].forEach(s=>{ctx.beginPath();ctx.moveTo(eq+s*st.A*scale,sy-34);ctx.lineTo(eq+s*st.A*scale,sy+30);ctx.stroke()});ctx.setLineDash([]);
+    label(ctx,'x = 0',eq,sy+38,C.muted,'center',10);label(ctx,'−A',eq-st.A*scale,sy+38,C.muted,'center',10);label(ctx,'+A',eq+st.A*scale,sy+38,C.muted,'center',10);
+    // arrows v and a
+    const ar=(len,col,dy,lab)=>{if(Math.abs(len)<2)return;const y0=sy+dy;ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(bx,y0);ctx.lineTo(bx+len,y0);ctx.stroke();arrowHead(ctx,bx+len,y0,len>0?0:Math.PI,8,col);label(ctx,lab,bx+len+(len>0?10:-10),y0,col,'center',11)};
+    ar(v/(om*st.A)*50,C.wave2,-40,'v');ar(a/(om*om*st.A)*50,C.node,-56,'a');
+    // energy bars
+    const Et=0.5*st.k*st.A**2,Ep=0.5*st.k*x*x,Ek=Et-Ep;const ex=w-110,ey=sy-26,eh=52;
+    [[Ek,C.wave2,'KE'],[Ep,C.accent,'PE']].forEach(([E,c,l],i)=>{const xx=ex+i*40;ctx.strokeStyle=C.line;ctx.strokeRect(xx,ey,24,eh);ctx.fillStyle=c;const hh=eh*E/Et;ctx.fillRect(xx,ey+eh-hh,24,hh);label(ctx,l,xx+12,ey+eh+10,C.muted,'center',10)});
+    // graphs
+    const g0=h*0.36,gh=(h-g0-14)/3,gx=40,gw=w-gx-12,win=Math.max(2.2*2*Math.PI/om,3);
+    [[t=>st.A*Math.cos(om*t),st.A,C.accent,'x'],[t=>-om*st.A*Math.sin(om*t),om*st.A,C.wave2,'v'],[t=>-om*om*st.A*Math.cos(om*t),om*om*st.A,C.node,'a']].forEach(([f,mx,c,l],i)=>{
+      const y0=g0+gh*i+gh/2,amp=gh*0.38;ctx.strokeStyle=C.line;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gx,y0);ctx.lineTo(gx+gw,y0);ctx.moveTo(gx,y0-gh*0.45);ctx.lineTo(gx,y0+gh*0.45);ctx.stroke();
+      label(ctx,l,gx-16,y0,c,'center',13);
+      ctx.strokeStyle=c;ctx.lineWidth=2;ctx.beginPath();for(let px=0;px<=gw;px+=2){const tt=t-win+win*px/gw;const yy=y0-amp*f(tt)/mx;px?ctx.lineTo(gx+px,yy):ctx.moveTo(gx+px,yy)}ctx.stroke();
+      dot(ctx,gx+gw,y0-amp*f(t)/mx,4.5,c);});
+    label(ctx,'time →  (now at right edge)',gx+gw,h-6,C.muted,'right',10);
+  }};
+})();
+
+/* ===== RESONANCE ===== */
+(()=>{const st={r:0.6,z:0.1};const cv=$('c-resonance');
+  const amp=(r,z)=>1/Math.sqrt((1-r*r)**2+(2*z*r)**2),lag=(r,z)=>Math.atan2(2*z*r,1-r*r);
+  function upd(){st.r=+$('rs-f').value;st.z=+$('rs-z').value;$('rs-f-o').textContent=fmt(st.r)+' × f₀';$('rs-z-o').textContent=fmt(st.z);
+    const A=amp(st.r,st.z),d=lag(st.r,st.z)*180/Math.PI;
+    $('rs-read').innerHTML=`<div><dt>amplitude ÷ driver amplitude</dt><dd>${fmt(A,2)}</dd></div><div><dt>phase lag</dt><dd>${fmt(d,0)}°</dd></div><div><dt>damping type</dt><dd>${st.z<0.3?'light':st.z<0.9?'heavy':st.z<=1?'≈ critical':'over'}</dd></div>`;
+    $('rs-status').innerHTML=Math.abs(st.r-1)<0.04?'<b>Resonance.</b> Driving frequency matches the natural frequency: maximum energy transfer, oscillator lags by about 90°.':st.r<1?'<b>Below resonance.</b> The oscillator follows the driver, roughly in phase.':'<b>Above resonance.</b> The oscillator can\'t keep up; amplitude falls and it moves towards antiphase.';}
+  ['rs-f','rs-z'].forEach(i=>$(i).addEventListener('input',upd));upd();
+  sims.resonance={draw(t){const{ctx,w,h}=sizeCanvas(cv,0.72,300);bg(ctx,w,h);
+    const sw=Math.min(170,w*0.32);const cx=sw/2+10;const om=2*Math.PI*0.8*st.r;
+    const dA=8,A=Math.min(70,dA*amp(st.r,st.z)),d=lag(st.r,st.z);
+    const dy=40+dA*Math.sin(om*t),my=150+A*Math.sin(om*t-d);
+    ctx.fillStyle=C.wave2;ctx.fillRect(cx-30,dy-8,60,10);label(ctx,'driver',cx+46,40,C.wave2,'left',10);
+    ctx.strokeStyle=C.muted;ctx.lineWidth=1.5;ctx.beginPath();const n=12;ctx.moveTo(cx,dy+2);for(let i=1;i<=n*2;i++){ctx.lineTo(cx+(i%2?-8:8),dy+2+(my-18-dy-2)*i/(n*2))}ctx.lineTo(cx,my-18);ctx.stroke();
+    ctx.fillStyle=C.accent;ctx.fillRect(cx-20,my-18,40,36);
+    ctx.setLineDash([3,4]);ctx.strokeStyle=C.line;ctx.beginPath();ctx.moveTo(cx-40,150);ctx.lineTo(cx+40,150);ctx.stroke();ctx.setLineDash([]);
+    // curve
+    const gx=sw+50,gy=24,gw=w-gx-16,gh=h-gy-40,maxA=11;
+    ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx,gy+gh);ctx.lineTo(gx+gw,gy+gh);ctx.stroke();
+    [0,0.5,1,1.5,2].forEach(r=>{const x=gx+gw*r/2;label(ctx,r===1?'f₀':String(r),x,gy+gh+12,C.muted,'center',10)});
+    label(ctx,'driving frequency ÷ f₀',gx+gw,gy+gh+28,C.muted,'right',10);label(ctx,'amplitude',gx+4,gy-10,C.muted,'left',10);
+    const curve=(z,col,lw)=>{ctx.strokeStyle=col;ctx.lineWidth=lw;ctx.beginPath();for(let px=0;px<=gw;px+=2){const r=Math.max(0.001,2*px/gw);const yy=gy+gh-gh*Math.min(maxA,amp(r,z))/maxA;px?ctx.lineTo(gx+px,yy):ctx.moveTo(gx+px,yy)}ctx.stroke()};
+    [0.05,0.2,0.5].forEach(z=>curve(z,alpha(C.muted,0.35),1));curve(st.z,C.accent,2.5);
+    dot(ctx,gx+gw*st.r/2,gy+gh-gh*Math.min(maxA,amp(st.r,st.z))/maxA,6,C.node);
+    ctx.setLineDash([3,4]);ctx.strokeStyle=C.line;ctx.beginPath();ctx.moveTo(gx+gw/2,gy);ctx.lineTo(gx+gw/2,gy+gh);ctx.stroke();ctx.setLineDash([]);
+  }};
+})();
+
+/* ===== GASES ===== */
+(()=>{const st={T:300,V:2.5,n:0.1};const cv=$('c-gases');const R=8.31,M=0.028;let parts=[],flash=[0,0,0,0];
+  function seed(){const N=Math.round(st.n*500);while(parts.length<N)parts.push({x:Math.random(),y:Math.random(),a:Math.random()*6.283,s:0.6+Math.random()*0.8});parts.length=N}
+  function upd(){st.T=+$('gs-T').value;st.V=+$('gs-V').value;st.n=+$('gs-n').value;seed();
+    $('gs-T-o').textContent=st.T+' K ('+(st.T-273)+' °C)';$('gs-V-o').textContent=fmt(st.V,1)+' × 10⁻³ m³';$('gs-n-o').textContent=fmt(st.n)+' mol';
+    const p=st.n*R*st.T/(st.V*1e-3);
+    $('gs-read').innerHTML=`<div><dt>pressure p = nRT/V</dt><dd>${fmt(p/1000,1)} kPa</dd></div><div><dt>mean KE per molecule</dt><dd>${sci(1.5*1.38e-23*st.T)} J</dd></div><div><dt>c<sub>rms</sub> = √(3RT/M)</dt><dd>${fmt(Math.sqrt(3*R*st.T/M),0)} m s⁻¹</dd></div><div><dt>molecules N</dt><dd>${sci(st.n*6.02e23)}</dd></div>`;}
+  ['gs-T','gs-V','gs-n'].forEach(i=>$(i).addEventListener('input',upd));upd();
+  let lastT=0;
+  sims.gases={draw(t){const{ctx,w,h}=sizeCanvas(cv,0.8,330);bg(ctx,w,h);const dt=Math.max(0,Math.min(0.05,t-lastT));lastT=t;
+    const bh=h*0.5,by=14,bx=16,maxW=w-130,bw=maxW*st.V/5;
+    const sp=0.25*Math.sqrt(st.T/300);
+    ctx.fillStyle=alpha(C.accent,0.06);ctx.fillRect(bx,by,bw,bh);
+    for(const p of parts){p.x+=Math.cos(p.a)*sp*p.s*dt*(maxW/bw);p.y+=Math.sin(p.a)*sp*p.s*dt*1.6;
+      if(p.x<0){p.x=-p.x;p.a=Math.PI-p.a;flash[0]=1}if(p.x>1){p.x=2-p.x;p.a=Math.PI-p.a;flash[1]=1}
+      if(p.y<0){p.y=-p.y;p.a=-p.a;flash[2]=1}if(p.y>1){p.y=2-p.y;p.a=-p.a;flash[3]=1}
+      dot(ctx,bx+6+p.x*(bw-12),by+6+p.y*(bh-12),3,C.wave2)}
+    ctx.strokeStyle=C.ink;ctx.lineWidth=2;ctx.strokeRect(bx,by,bw,bh);
+    ctx.fillStyle=C.ink;ctx.fillRect(bx+bw,by-6,8,bh+12);ctx.fillRect(bx+bw+8,by+bh/2-3,maxW-bw+30,6);label(ctx,'piston',bx+bw+12,by+bh+16,C.muted,'left',10);
+    flash=flash.map(f=>f*0.85);
+    // gauge
+    const p=st.n*R*st.T/(st.V*1e-3),gx=w-56,gy=by+bh/2,gr=38;ctx.strokeStyle=C.line;ctx.lineWidth=6;ctx.beginPath();ctx.arc(gx,gy,gr,Math.PI*0.75,Math.PI*2.25);ctx.stroke();
+    const frac=Math.min(1,p/1.5e6),ang=Math.PI*0.75+frac*Math.PI*1.5;ctx.strokeStyle=C.node;ctx.beginPath();ctx.arc(gx,gy,gr,Math.PI*0.75,ang);ctx.stroke();
+    ctx.strokeStyle=C.ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx+gr*0.8*Math.cos(ang),gy+gr*0.8*Math.sin(ang));ctx.stroke();label(ctx,fmt(p/1000,0)+' kPa',gx,gy+gr+10,C.ink,'center',11);
+    // p vs theta graph
+    const g0=by+bh+40,gh=h-g0-26,gx0=46,gw=w-gx0-14,tmin=-300,tmax=400,pmax=st.n*R*(400+273)/(st.V*1e-3)*1.1;
+    const X=th=>gx0+gw*(th-tmin)/(tmax-tmin),Y=pp=>g0+gh-gh*pp/pmax;
+    ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gx0,Y(0));ctx.lineTo(gx0+gw,Y(0));ctx.moveTo(X(0),g0);ctx.lineTo(X(0),g0+gh);ctx.stroke();
+    [-273,-200,-100,100,200,300,400].forEach(th=>label(ctx,String(th),X(th),Y(0)+12,th===-273?C.node:C.muted,'center',10));
+    label(ctx,'θ / °C',gx0+gw,Y(0)-10,C.muted,'right',10);label(ctx,'p',X(0)+8,g0+4,C.muted,'left',11);
+    const pf=th=>st.n*R*(th+273)/(st.V*1e-3);
+    ctx.setLineDash([4,4]);ctx.strokeStyle=C.node;ctx.beginPath();ctx.moveTo(X(-273),Y(0));ctx.lineTo(X(-173),Y(pf(-173)));ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle=C.accent;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(-173),Y(Math.min(pmax,pf(-173))));ctx.lineTo(X(327),Y(Math.min(pmax,pf(327))));ctx.stroke();
+    dot(ctx,X(st.T-273),Y(Math.min(pmax,p)),5.5,C.node);label(ctx,'absolute zero',X(-273)+4,Y(0)-12,C.node,'left',10);
+  }};
+})();
+
+/* ===== HEAT ===== */
+(()=>{const st={m:0.2,P:1000};const cv=$('c-heat');const ci=2100,cw=4200,lf=3.34e5,lv=2.26e6;let stages=[];
+  function upd(){st.m=+$('ht-m').value;st.P=+$('ht-P').value;$('ht-m-o').textContent=fmt(st.m)+' kg';$('ht-P-o').textContent=st.P+' W';
+    const E=[st.m*ci*20,st.m*lf,st.m*cw*100,st.m*lv];const names=['warm ice','melt','warm water','boil'];
+    stages=E.map((e,i)=>({e,t:e/st.P,name:names[i]}));
+    $('ht-read').innerHTML=stages.map(s=>`<div><dt>${s.name}</dt><dd>${fmt(s.t,0)} s</dd></div>`).join('')+`<div><dt>total energy</dt><dd>${sci(E.reduce((a,b)=>a+b))} J</dd></div>`;}
+  ['ht-m','ht-P'].forEach(i=>$(i).addEventListener('input',upd));upd();
+  function tempAt(tt){let c=0;const s=stages;
+    if(tt<c+s[0].t)return{T:-20+20*(tt-c)/s[0].t,ph:0};c+=s[0].t;
+    if(tt<c+s[1].t)return{T:0,ph:1};c+=s[1].t;
+    if(tt<c+s[2].t)return{T:100*(tt-c)/s[2].t,ph:2};c+=s[2].t;
+    if(tt<c+s[3].t)return{T:100,ph:3};return{T:100,ph:4};}
+  const desc=['<b>Warming the ice:</b> energy increases the kinetic energy of the molecules. Q = mc<sub>ice</sub>Δθ.','<b>Melting at 0 °C:</b> energy breaks bonds and increases potential energy. Temperature stays constant. Q = ml<sub>f</sub>.','<b>Warming the water:</b> kinetic energy rises again. Q = mc<sub>water</sub>Δθ. The slope is shallower than for ice because c<sub>water</sub> is bigger.','<b>Boiling at 100 °C:</b> by far the longest stage, because l<sub>v</sub> is almost 7 times l<sub>f</sub>.','<b>All boiled away.</b> Press Pause, then Play, to see it again after the curve restarts.'];
+  let lastPh=-1;
+  sims.heat={draw(t){const{ctx,w,h}=sizeCanvas(cv,0.6,260);bg(ctx,w,h);
+    const total=stages.reduce((a,s)=>a+s.t,0);const loopLen=14;const tt=(t%(loopLen+2))/loopLen*total;
+    const gx=50,gy=18,gw=w-gx-16,gh=h-gy-40;const X=s=>gx+gw*s/total,Y=T=>gy+gh-gh*(T+30)/140;
+    ctx.strokeStyle=C.muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gx,gy);ctx.lineTo(gx,gy+gh);ctx.lineTo(gx+gw,gy+gh);ctx.stroke();
+    [-20,0,50,100].forEach(T=>{label(ctx,T+' °C',gx-6,Y(T),C.muted,'right',10);ctx.strokeStyle=C.grid;ctx.beginPath();ctx.moveTo(gx,Y(T));ctx.lineTo(gx+gw,Y(T));ctx.stroke()});
+    label(ctx,'time / s → total '+fmt(total,0)+' s',gx+gw,gy+gh+16,C.muted,'right',10);
+    // full faint curve
+    let c=0;const pts=[[0,-20]];stages.forEach((s,i)=>{c+=s.t;pts.push([c,[0,0,100,100][i]])});
+    ctx.strokeStyle=alpha(C.muted,0.4);ctx.lineWidth=1.5;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));ctx.stroke();
+    // progress curve
+    const now=tempAt(Math.min(tt,total));ctx.strokeStyle=C.node;ctx.lineWidth=2.8;ctx.beginPath();ctx.moveTo(X(0),Y(-20));
+    for(const p of pts.slice(1)){if(p[0]<=tt)ctx.lineTo(X(p[0]),Y(p[1]));else break}
+    ctx.lineTo(X(Math.min(tt,total)),Y(now.T));ctx.stroke();dot(ctx,X(Math.min(tt,total)),Y(now.T),5.5,C.node);
+    c=0;stages.forEach(s=>{if(X(s.t)-X(0)>44)label(ctx,s.name,X(c+s.t/2),s.name==='melt'?Y(0)-12:s.name==='boil'?Y(100)-12:Y(s.name==='warm ice'?-10:50)-14,C.ink,'center',10);c+=s.t});
+    if(now.ph!==lastPh){$('ht-status').innerHTML=desc[now.ph];lastPh=now.ph}
+  }};
+})();
+/* ---------------- tabs + loop ---------------- */
+const tabs=[...document.querySelectorAll('.tab')];let active=tabs[0].dataset.tab;
+function show(id,push){if(!document.querySelector(`[data-panel="${id}"]`))id=tabs[0].dataset.tab;active=id;
+  tabs.forEach(t=>{const on=t.dataset.tab===id;t.setAttribute('aria-selected',on);t.tabIndex=on?0:-1});
+  document.querySelectorAll('.panel').forEach(p=>p.hidden=p.dataset.panel!==id);
+  if(push&&location.hash!=='#'+id){try{history.replaceState(null,'','#'+id)}catch(e){location.hash=id}}
+  const t=tabs.find(t=>t.dataset.tab===id);t&&t.scrollIntoView({block:'nearest',inline:'nearest'});
+  if(sims[id])sims[id].draw(times[id]||0);}
+tabs.forEach(t=>t.addEventListener('click',()=>{show(t.dataset.tab,true);window.scrollTo({top:0})}));
+$('tablist').addEventListener('keydown',e=>{const i=tabs.findIndex(t=>t.dataset.tab===active);let j=i;
+  if(e.key==='ArrowRight')j=(i+1)%tabs.length;else if(e.key==='ArrowLeft')j=(i-1+tabs.length)%tabs.length;else return;
+  e.preventDefault();show(tabs[j].dataset.tab,true);tabs[j].focus();});
+window.addEventListener('hashchange',()=>show(location.hash.slice(1)||tabs[0].dataset.tab));
+const times={};
+document.querySelectorAll('[data-pause]').forEach(b=>{const k=b.dataset.pause;paused[k]=reduce;b.textContent=reduce?'Play':'Pause';
+  b.addEventListener('click',()=>{paused[k]=!paused[k];b.textContent=paused[k]?'Play':'Pause'})});
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+  const s=sims[active];if(s){if(!paused[active])times[active]=(times[active]||0)+dt;s.draw(times[active]||0)}
+  requestAnimationFrame(loop)}
+show(location.hash.slice(1)||tabs[0].dataset.tab);requestAnimationFrame(loop);
+
+</script>
+
+</body></html>
